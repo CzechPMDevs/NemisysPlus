@@ -1,0 +1,8 @@
+name: NemisysPlus
+main: CzechPMDevs.NemisysPlus
+version: "1.0"
+api: ["1.0.0"]
+author: CzechPMDevs
+authors:
+  - Alemiz
+description: NemisysPlus Plugin
