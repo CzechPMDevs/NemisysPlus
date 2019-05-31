@@ -11,6 +11,7 @@ import org.itxtech.nemisys.network.protocol.mcpe.TextPacket;
 import org.itxtech.nemisys.plugin.PluginBase;
 import org.itxtech.nemisys.utils.Config;
 import org.itxtech.nemisys.utils.TextFormat;
+import CzechPMDevs.Staff.StaffManager;
 
 import CzechPMDevs.Untils.Text;
 
@@ -18,6 +19,7 @@ public class NemisysPlus extends PluginBase implements Listener {
 
     public Config cfg;
 
+    public StaffManager staffManager;
 
     @Override
     public void onEnable() {
@@ -35,6 +37,7 @@ public class NemisysPlus extends PluginBase implements Listener {
 
         //Start Text Untils
         new Text();
+        this.staffManager = new StaffManager(this);
     }
 
     //Soon will be in separated in other file
@@ -44,6 +47,8 @@ public class NemisysPlus extends PluginBase implements Listener {
         String data = new String(event.getData());
 
         String[] Data = data.split(":");
+
+        Player player;
 
         switch (channel) {
             /*case "Game":
@@ -55,13 +60,12 @@ public class NemisysPlus extends PluginBase implements Listener {
 
                 Server.broadcastPacket(this.getServer().getOnlinePlayers().values(), textPacket);
                 break;
-            case "Message": {
-                Player player = this.getServer().getPlayer(Data[0]);
-
+            case "Message":
+                player = this.getServer().getPlayer(Data[0]);
                 if (player == null) break;
                 player.sendMessage(Text.getInstance().format(Data[1]));
                 break;
-            }
+
             case "Tip":
                 TextPacket tipPacket = new TextPacket();
                 tipPacket.type = TextPacket.TYPE_TIP;
@@ -76,34 +80,48 @@ public class NemisysPlus extends PluginBase implements Listener {
 
                 Server.broadcastPacket(this.getServer().getOnlinePlayers().values(), titlePacket);
                 break;
-            case "Kick": {
-                Player player = this.getServer().getPlayer(Data[0]);
+            case "Kick":
+                player = this.getServer().getPlayer(Data[0]);
                 String reason = TextFormat.RED + "You was kicked! " + TextFormat.YELLOW + "Join Again";
 
                 if (player == null) break;
                 player.close(reason);
                 break;
-            }
 
-            case "Staff":{ //TODO: Will redirect to new class
+            case "Staff":
+                this.getLogger().info(TextFormat.RED + "Staff:" + TextFormat.GOLD + data);
+
                 switch (Data[0]){ //Data[0] = Status_Join|Status_Leave|Message
                     case "Status_Join":
-                        //TODO: Implement StaffChat Join
+                        player = this.getServer().getPlayer(Data[1]);
+                        this.staffManager.staffChat.addChatter(player);
                         break;
                     case  "Status_Leave":
-                        //TODO: Implement StaffChat Leave
+                        player = this.getServer().getPlayer(Data[1]);
+                        this.staffManager.staffChat.removeChatter(player);
                         break;
                     case "Message":
                         String sender = Data[1];
                         String message = Data[2];
-                        //TODO: Implement Send Message
+                        this.staffManager.sendSenderMessage(message, sender);
+                        break;
+                    case "Player_LOGIN":
+                        player = this.getServer().getPlayer(Data[1]);
+                        this.staffManager.addStaff(player);
+                        this.getLogger().info(TextFormat.RED + "Staff Join:" + TextFormat.GOLD + Data[1]);
+                        break;
+                    case "Player_LOGOUT":
+                        player = this.getServer().getPlayer(Data[1]);
+                        this.staffManager.removeStaff(player);
                         break;
                 }
                 break;
-            }
+
             default:
                 break;
         }
 
+        this.getLogger().info(TextFormat.RED + "Packet:" + TextFormat.GOLD + data);
     }
+
 }
